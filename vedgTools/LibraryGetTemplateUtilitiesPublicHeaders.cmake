@@ -1,0 +1,5 @@
+include(vedgTools/LibraryGetPublicHeadersProperty)
+if(NOT DEFINED PATH_TO_TEMPLATE_UTILITIES)
+    set(PATH_TO_TEMPLATE_UTILITIES TemplateUtilities)
+endif()
+libraryGetPublicHeadersProperty(TemplateUtilities ${PATH_TO_TEMPLATE_UTILITIES})

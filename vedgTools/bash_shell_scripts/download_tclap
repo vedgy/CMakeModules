@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+set -x
+url=http://sourceforge.net/projects/tclap/files/tclap-1.2.1.tar.gz
+filename=$(basename "$url")
+wget "$url" -O "$filename" || curl "$url" -L -o "$filename"
+dirname=tclap
+mkdir $dirname
+tar -xzf "$filename" --strip-components=1 -C $dirname
+rm "$filename"

@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+set -x
+dirname=build
+mkdir $dirname
+cd $dirname
+cmake -DCMAKE_BUILD_TYPE=Release $@ ..
+make

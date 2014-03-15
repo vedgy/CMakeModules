@@ -1,0 +1,7 @@
+macro(qtAddResources)
+    if(USE_QT5)
+        qt5_add_resources(${ARGN})
+    else()
+        qt4_add_resources(${ARGN})
+    endif()
+endmacro()

@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+set -x
+script_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+"$script_dir/download_tclap"
+"$script_dir/build_this" -DTCLAP_INCLUDE_PATH:PATH=tclap/include $@

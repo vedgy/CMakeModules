@@ -1,0 +1,5 @@
+if(${CAP_Target_Name}_AS_SHARED_LIBRARY)
+    add_library(${Target_Name} SHARED ${Sources})
+else()
+    add_library(${Target_Name} STATIC ${Sources})
+endif()
