@@ -98,7 +98,7 @@ public:
     explicit Impl();
 
     /// @brief Expands source and returns result.
-    /// @param modulesDir Directory, which contains cmake modules.
+    /// @param modulesDir Directory that contains cmake modules.
     std::string expand(const std::string & source, std::string modulesDir);
 
 private:
@@ -216,8 +216,8 @@ std::string IncludeExpander::Impl::expand(
         std::string result = source.substr(0, posAfterComment);
         if (matched) {
             result +=
-                "## Boilerplate code, which searches CMakeModules in "
-                "${CMAKE_MODULE_PATH} and adds it if missing, was omitted.\n" +
+                "## Boilerplate code that searches CMakeModules in "
+                "${CMAKE_MODULE_PATH} and adds it if missing was omitted.\n" +
                 getContents(filename_.getParam()) +
                 source.substr(index);
         }

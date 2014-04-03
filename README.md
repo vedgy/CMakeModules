@@ -4,7 +4,7 @@
 other vedgTools libraries as well as separate projects.
 
 <b>vedgTools/IncludeExpander</b> is part of this library.
-It allows to create expanded version of CMakeLists.txt file, which includes
+It allows to create expanded version of CMakeLists.txt file that includes
 `vedgTools/*.cmake` modules. More specifically, include_expander replaces all
 vedgTools includes with corresponding cmake-files' contents.
 vedgTools/IncludeExpander depends on free library TCLAP.

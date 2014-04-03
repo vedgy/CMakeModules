@@ -194,7 +194,7 @@ private:
 class SearchLine : public Pattern
 {
 public:
-    /// @brief Finds line, which matches this pattern. Skips everything
+    /// @brief Finds line that matches this pattern. Skips everything
     /// before this line. Pattern from derived classes is considered to be found
     /// only if it starts the line (i.e. there are no non-whitespace symbols in
     /// the line before value).
