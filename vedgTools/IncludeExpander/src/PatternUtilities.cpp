@@ -26,7 +26,7 @@ namespace PatternUtilities
 {
 bool Whitespace::match(const std::string & source, std::size_t & index)
 {
-    if (index < source.size() && std::isspace(source[index])) {
+    if (index < source.size() && safeCtype<std::isspace>(source[index])) {
         ++index;
         return true;
     }
@@ -38,7 +38,9 @@ bool Param::match(const std::string & source, std::size_t & index)
 {
     discarder_(source, index);
     std::size_t end = index;
-    skipIf(source, end, [](char c) { return !(c == ')' || std::isspace(c)); });
+    skipIf(source, end, [](char c) {
+        return !(c == ')' || safeCtype<std::isspace>(c));
+    });
     if (end == index)
         return false;
     param_ = source.substr(index, end - index);
@@ -68,7 +70,7 @@ bool SearchLine::match(const std::string & source, std::size_t & index)
                 ++lineBeginning_;
                 break;
             }
-            if (! std::isspace(source[lineBeginning_])) {
+            if (! safeCtype<std::isspace>(source[lineBeginning_])) {
                 lineBeginning_ = std::string::npos;
                 break;
             }
@@ -97,7 +99,7 @@ SearchCiStringLine::SearchCiStringLine(const std::string & lowerStr)
             "Don't pass empty string to SearchCiStringLine constructor.");
     }
     const char lower = lowerStr.front();
-    const char upper = std::toupper(lower);
+    const char upper = safeCtype<std::toupper>(lower);
     if (lower == upper)
         firstSymbol_.assign(1, lower);
     else

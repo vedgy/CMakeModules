@@ -34,6 +34,10 @@
 
 namespace PatternUtilities
 {
+inline int safeCtypeCast(unsigned char c) { return c; }
+template<int (& F)(int)>
+inline int safeCtype(unsigned char c) { return F(c); }
+
 template <typename UnaryCharPredicate>
 inline void skipIf(const std::string & str, std::size_t & index,
                    UnaryCharPredicate f)
@@ -43,12 +47,12 @@ inline void skipIf(const std::string & str, std::size_t & index,
 
 inline void skipWs(const std::string & str, std::size_t & index)
 {
-    skipIf(str, index, [](char c) { return std::isspace(c); });
+    skipIf(str, index, safeCtype<std::isspace>);
 }
 
 inline void skipBlank(const std::string & str, std::size_t & index)
 {
-    skipIf(str, index, [](char c) { return std::isblank(c); });
+    skipIf(str, index, safeCtype<std::isblank>);
 }
 
 inline void noSkip(const std::string &, std::size_t &)
@@ -126,7 +130,7 @@ typedef GenericString<std::equal_to<char>> String;
 
 struct LowerMixedCaseCiCharComparator {
     bool operator()(char lower, char mixed) const {
-        return lower == std::tolower(mixed);
+        return safeCtypeCast(lower) == safeCtype<std::tolower>(mixed);
     }
 };
 /// Case-insensitive String.
