@@ -7,7 +7,7 @@ macro(executableFindQt)
     else()
         set(USE_QT5 TRUE)
         foreach(E_F_Q_MODULE ${ARGV})
-            if(${E_F_Q_MODULE} STREQUAL .) # Qt4 modules follow after period.
+            if(E_F_Q_MODULE STREQUAL .) # Qt4 modules follow after period.
                 break()
             endif()
 
@@ -29,7 +29,7 @@ macro(executableFindQt)
                 # Append (Qt4 component) to ${E_F_Q_4}.
                 set(E_F_Q_4 ${E_F_Q_4} ${E_F_Q_MODULE})
             else()
-                if(${E_F_Q_MODULE} STREQUAL .) # Qt4 modules follow
+                if(E_F_Q_MODULE STREQUAL .) # Qt4 modules follow
                     set(E_F_Q_5_PASSED TRUE)   # after period.
                 endif()
             endif()
