@@ -34,9 +34,9 @@
 
 namespace PatternUtilities
 {
-inline int safeCtypeCast(unsigned char c) { return c; }
+constexpr int safeCtypeCast(unsigned char c) noexcept { return c; }
 template<int (& F)(int)>
-inline int safeCtype(unsigned char c) { return F(c); }
+constexpr int safeCtype(unsigned char c) { return F(c); }
 
 template <typename UnaryCharPredicate>
 inline void skipIf(const std::string & str, std::size_t & index,
@@ -55,7 +55,7 @@ inline void skipBlank(const std::string & str, std::size_t & index)
     skipIf(str, index, safeCtype<std::isblank>);
 }
 
-inline void noSkip(const std::string &, std::size_t &)
+inline void noSkip(const std::string &, std::size_t &) noexcept
 {}
 
 
@@ -70,7 +70,12 @@ public:
     /// @return true in case of match, false otherwise.
     virtual bool match(const std::string & source, std::size_t & index) = 0;
 
-    virtual ~Pattern() {}
+    Pattern() = default;
+    virtual ~Pattern() = default;
+    Pattern(const Pattern &) = default;
+    Pattern & operator=(const Pattern &) = default;
+    Pattern(Pattern &&) = default;
+    Pattern & operator=(Pattern &&) = default;
 };
 
 
@@ -129,7 +134,7 @@ private:
 typedef GenericString<std::equal_to<char>> String;
 
 struct LowerMixedCaseCiCharComparator {
-    bool operator()(char lower, char mixed) const {
+    constexpr bool operator()(char lower, char mixed) const {
         return safeCtypeCast(lower) == safeCtype<std::tolower>(mixed);
     }
 };

@@ -68,13 +68,10 @@ void checkError(const std::ofstream & ofs, const std::string & filename)
 }
 
 
-/// @return Contents of the file dir[/]filename.
+/// @return Contents of the file (filename in dir).
 std::string getText(const std::string & dir, const std::string & filename)
 {
-    std::string absoluteName = dir;
-    if (! absoluteName.empty() && absoluteName.back() != '/')
-        absoluteName += '/';
-    absoluteName += filename;
+    const std::string absoluteName = dir + filename;
 
 # ifdef DEBUG_INCLUDE_EXPANDER
     std::cout << "Getting text of " << absoluteName << std::endl;
@@ -102,20 +99,29 @@ public:
     std::string expand(const std::string & source, std::string modulesDir);
 
 private:
+    /// @return Comment suitable for placing before included contents of module
+    /// moduleName.
+    std::string getIncludeOpeningComment(std::string moduleName);
+    /// @return Comment suitable for placing after included contents of module
+    /// moduleName.
+    std::string getIncludeClosingComment(std::string moduleName);
+
     /// @brief Reads module's text, expands all includes recursively and
     /// returns result.
     std::string getContents(const std::string & moduleName);
+
     /// @return (<expanded source>, true) if include patterns are present in
     /// source; (std::string(), false) otherwise.
     std::pair<std::string, bool> expandIncludes(const std::string & source);
 
+
     Whitespace whitespace_;
 
-    SearchCiStringLine startInclude_ { startCommand };
-    String startSeparator_ { startSeparator, skipWs };
-    String libraryPrefix_ { libraryPrefix, skipWs };
+    SearchCiStringLine startInclude_ { startCommand() };
+    String startSeparator_ { startSeparator(), skipWs };
+    String libraryPrefix_ { libraryPrefix(), skipWs };
     Param filename_ { noSkip };
-    String endSeparator_ { endSeparator, skipWs };
+    String endSeparator_ { endSeparator(), skipWs };
 
 
     SearchStringLine startBoilerplate_ { "##" };
@@ -126,7 +132,7 @@ private:
     };
     SearchSymbol searchEndOfLine_ { '\n' };
 
-    CiString includeCommand_ { startCommand, skipWs };
+    CiString includeCommand_ { startCommand(), skipWs };
     std::array<String, 2> includeBoilerplate_ {{
             String("OPTIONAL", skipWs), String("RESULT_VARIABLE", skipWs)
         }
@@ -141,7 +147,7 @@ private:
     };
 
     SearchCiStringLine endif_ { "endif" };
-    SearchSymbol searchEndSeparator_ { endSeparator.back() };
+    SearchSymbol searchEndSeparator_ { endSeparator().back() };
 
 
     const PatternMatcher::PatternSequence includeSequence_;
@@ -240,6 +246,18 @@ std::string IncludeExpander::Impl::expand(
 }
 
 
+std::string IncludeExpander::Impl::getIncludeOpeningComment(
+    std::string moduleName)
+{
+    return "# {!!! " + std::move(moduleName) + '\n';
+}
+
+std::string IncludeExpander::Impl::getIncludeClosingComment(
+    std::string moduleName)
+{
+    return "# !!!} " + std::move(moduleName) + '\n';
+}
+
 std::string IncludeExpander::Impl::getContents(const std::string & moduleName)
 {
 # ifdef DEBUG_INCLUDE_EXPANDER
@@ -280,25 +298,31 @@ std::pair<std::string, bool> IncludeExpander::Impl::expandIncludes(
             const std::size_t lineBeginning = startInclude_.getLineBeginning();
             result += source.substr(prevIndex, lineBeginning - prevIndex);
 
-            // Use indent of include-line for all expanded lines.
-            const std::string indent =
+            std::string indent =
                 source.substr(
                     lineBeginning,
                     startInclude_.getPatternBeginning() - lineBeginning);
-            std::size_t indentPos = result.size();
+            // Use indent of include-line + 2 spaces for all expanded lines.
+            const std::string biggerIndent = indent + "  ";
 
+            std::string moduleName = filename_.getParam();
+            result += indent + getIncludeOpeningComment(moduleName);
+
+            std::size_t indentPos = result.size();
             /// WARNING: be careful with reordering statements because
             /// getContents() can modify startInclude_, filename_.
-            result += getContents(filename_.getParam());
-            if (! indent.empty()) {
-                while (true) {
-                    result.insert(indentPos, indent);
-                    indentPos = result.find('\n', indentPos);
-                    if (indentPos == std::string::npos)
-                        break;
-                    ++indentPos;
-                }
+            result += getContents(moduleName);
+            while (true) {
+                result.insert(indentPos, biggerIndent);
+                indentPos = result.find('\n', indentPos);
+                if (indentPos == std::string::npos)
+                    break;
+                if (++indentPos == result.size())
+                    break;
             }
+
+            result += std::move(indent) +
+                      getIncludeClosingComment(std::move(moduleName));
 
             prevIndex = index;
         }
@@ -311,21 +335,6 @@ std::pair<std::string, bool> IncludeExpander::Impl::expandIncludes(
 
     return { std::move(result), expanded };
 }
-
-
-
-const std::string
-IncludeExpander::libraryCollection =
-    "vedgTools",
-    IncludeExpander::libraryPrefix =
-        libraryCollection + '/',
-        IncludeExpander::thisLibrary =
-            "CMakeModules",
-            IncludeExpander::startCommand =
-                "include",
-                IncludeExpander::startSeparator =
-                    "(",
-                    IncludeExpander::endSeparator = ")";
 
 
 IncludeExpander::IncludeExpander() : impl_(new Impl)
@@ -343,15 +352,18 @@ int IncludeExpander::operator()(const std::string & inputFile,
     try {
         checkError(input, inputFile);
     }
-    catch (Error &) {
+    catch (const Error &) {
         return 3;
     }
 
     std::string result;
     try {
-        result = impl_->expand(source, modulesDir);
+        std::string dir = modulesDir;
+        if (! dir.empty() && dir.back() != '/')
+            dir += '/';
+        result = impl_->expand(source, std::move(dir));
     }
-    catch (Error &) {
+    catch (const Error &) {
         return 4;
     }
 
@@ -360,7 +372,7 @@ int IncludeExpander::operator()(const std::string & inputFile,
     try {
         checkError(output, outputFile);
     }
-    catch (Error &) {
+    catch (const Error &) {
         return 5;
     }
 

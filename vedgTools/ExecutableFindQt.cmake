@@ -2,15 +2,14 @@
 # Arguments: required Qt5 modules, then period, then required Qt4 components.
 # For example: executableFindQt(Qt5Core Qt5Widgets . QTCORE QTGUI)
 macro(executableFindQt)
+    include(vedgTools/ParseQtModules)
+    parseQtModules(${ARGN})
+
     if(FORCE_QT4)
         set(USE_QT5 FALSE)
     else()
         set(USE_QT5 TRUE)
-        foreach(E_F_Q_MODULE ${ARGV})
-            if(E_F_Q_MODULE STREQUAL .) # Qt4 modules follow after period.
-                break()
-            endif()
-
+        foreach(E_F_Q_MODULE ${PQM_MODULES_5})
             find_package(${E_F_Q_MODULE})
             if(NOT ${E_F_Q_MODULE}_FOUND)
                 set(USE_QT5 FALSE)
@@ -22,19 +21,10 @@ macro(executableFindQt)
     if(USE_QT5)
         message("Using Qt5.")
     else()
-        set(E_F_Q_5_PASSED FALSE)
         unset(E_F_Q_4)
-        foreach(E_F_Q_MODULE ${ARGV})
-            if(E_F_Q_5_PASSED)
-                # Append (Qt4 component) to ${E_F_Q_4}.
-                set(E_F_Q_4 ${E_F_Q_4} ${E_F_Q_MODULE})
-            else()
-                if(E_F_Q_MODULE STREQUAL .) # Qt4 modules follow
-                    set(E_F_Q_5_PASSED TRUE)   # after period.
-                endif()
-            endif()
+        foreach(E_F_Q_COMPONENT ${PQM_COMPONENTS_4})
+            set(E_F_Q_4 ${E_F_Q_4} ${E_F_Q_COMPONENT})
         endforeach()
-        unset(E_F_Q_5_PASSED)
 
         find_package(Qt4 COMPONENTS ${E_F_Q_4} REQUIRED)
         unset(E_F_Q_4)

@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+# Copyright (C) 2014 Igor Kushnir <igorkuo AT Google mail>
+# License: GPL v3+ (http://www.gnu.org/copyleft/gpl.html)
+# test_include_expander: enters "build" subdirectory of current directory;
+# invokes ./include_expander and ./old_include_expander on each non-hidden
+# *.txt file as input assuming the default relative path to
+# CMakeModules/vedgTools directory.
+set -e
+# If first script parameter is passed and not empty, calls it as a command for
+# each pair of output files.
+# It can be meld or kompare (difference viewers) for example.
+command="${1:-}"
+
+cd build
+for input in *.txt; do
+    if [[ ! -f "$input" || "${input::1}" == "." ]]; then
+        echo "Skipping $input"
+        continue
+    fi
+    echo "Expanding $input"
+    beginning="${input%.*}_out"
+    extension=".cmake"
+    new_name="${beginning}${extension}"
+    ./include_expander -o "$new_name" -i "$input"
+    old_name="${beginning}_old${extension}"
+    ./old_include_expander -o "$old_name" -i "$input"
+    if [[ "$command" ]]; then
+        "$command" "$new_name" "$old_name"
+    fi
+done

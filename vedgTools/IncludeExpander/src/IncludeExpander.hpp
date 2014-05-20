@@ -26,8 +26,16 @@
 class IncludeExpander
 {
 public:
-    static const std::string libraryCollection, libraryPrefix, thisLibrary,
-           startCommand, startSeparator, endSeparator;
+# define INCLUDE_EXPANDER_STRING_CONSTANT(NAME, VALUE) \
+    static const std::string & NAME() {                \
+        static const std::string value{ VALUE }; return value; }
+    INCLUDE_EXPANDER_STRING_CONSTANT(libraryCollection, "vedgTools")
+    INCLUDE_EXPANDER_STRING_CONSTANT(libraryPrefix, libraryCollection() + '/')
+    INCLUDE_EXPANDER_STRING_CONSTANT(thisLibrary, "CMakeModules")
+    INCLUDE_EXPANDER_STRING_CONSTANT(startCommand, "include")
+    INCLUDE_EXPANDER_STRING_CONSTANT(startSeparator, "(")
+    INCLUDE_EXPANDER_STRING_CONSTANT(endSeparator, ")")
+# undef INCLUDE_EXPANDER_STRING_CONSTANT
 
     explicit IncludeExpander();
     ~IncludeExpander();

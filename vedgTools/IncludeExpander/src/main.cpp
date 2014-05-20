@@ -29,8 +29,8 @@ int main(int argc, char * argv[])
     try {
         TCLAP::CmdLine cmd(
             EXECUTABLE_NAME
-            " - expands " + IncludeExpander::startCommand + '(' +
-            IncludeExpander::libraryPrefix + "...) command in CMake file.",
+            " - expands " + IncludeExpander::startCommand() + '(' +
+            IncludeExpander::libraryPrefix() + "...) command in CMake file.",
             ' ', "1");
 
         const std::string stringTypeDesc = "string";
@@ -45,8 +45,8 @@ int main(int argc, char * argv[])
 
         TCLAP::ValueArg<std::string> modulesDirArg(
             "m", "modules-dir",
-            "Path to " + IncludeExpander::thisLibrary + '/' +
-            IncludeExpander::libraryCollection + " directory",
+            "Path to " + IncludeExpander::thisLibrary() + '/' +
+            IncludeExpander::libraryCollection() + " directory",
             false, "../..", stringTypeDesc, cmd);
 
         cmd.parse(argc, argv);
