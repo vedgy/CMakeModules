@@ -2,6 +2,8 @@
 
 <b>vedgTools/CMakeModules</b> is a collection of cmake files, which are used by
 other vedgTools libraries as well as separate projects.
+Apart from cmake files in `vedgTools` directory, this library contains several
+C++ headers in `include/CommonUtilities` directory.
 
 <b>vedgTools/IncludeExpander</b> is part of this library.
 It allows to create expanded version of CMakeLists.txt file that includes
@@ -16,7 +18,7 @@ are provided.
 Copyright (C) 2014 Igor Kushnir <igorkuo AT Google mail>
 
 vedgTools/CMakeModules is licensed under the <b>GNU GPLv3+</b> license,
-a copy of which can be found in the `vedgTools/COPYING` file.
+a copy of which can be found in the `COPYING` file.
 
 vedgTools/CMakeModules is free software: you can redistribute it and/or
 modify it under the terms of the GNU General Public License as published by

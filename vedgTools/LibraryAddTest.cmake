@@ -1,10 +1,12 @@
 # Brief: adds test "${TargetName}_${targetNameSuffix}" with specified
-# ${sources}. Links it to Qt Core, Test modules and to ${TargetName}.
+# ${sources}. Links it to Qt Core, Test modules and to ${libraries}.
 # Optional arguments after sources: additional required Qt5 modules,
 # then period, then additional required Qt4 components.
-# For example: libraryAddTest(StringTest test/StringTest.cpp) OR
-# libraryAddTest(ShortcutsTest test/ShortcutsTest.cpp Xml . ${QT_QTXML_LIBRARY})
-function(libraryAddTest targetNameSuffix sources)
+# For example: libraryAddTest("StringTest" test/StringTest.cpp ${Target_Name})
+# OR libraryAddTest("ShortcutsTest" test/ShortcutsTest.cpp ${Target_Name}
+#                                               Xml . ${QT_QTXML_LIBRARY})
+# OR libraryAddTest("ReserveTest" test/ReserveTest.cpp "")
+function(libraryAddTest targetNameSuffix sources libraries)
     set(LAT_TARGET_NAME "${Target_Name}_${targetNameSuffix}")
     add_executable(${LAT_TARGET_NAME} ${sources})
 
@@ -16,6 +18,6 @@ function(libraryAddTest targetNameSuffix sources)
     include(vedgTools/LinkQtParsed)
     linkQtParsed(${LAT_TARGET_NAME})
 
-    target_link_libraries(${LAT_TARGET_NAME} ${Target_Name})
+    target_link_libraries(${LAT_TARGET_NAME} ${libraries})
     add_test(${LAT_TARGET_NAME} ${LAT_TARGET_NAME})
 endfunction()

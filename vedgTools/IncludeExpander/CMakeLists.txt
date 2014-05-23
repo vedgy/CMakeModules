@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 2.8 FATAL_ERROR)
 
-set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH};${CMAKE_CURRENT_SOURCE_DIR}/../..")
+set(PATH_TO_CMAKE_MODULES ${CMAKE_CURRENT_SOURCE_DIR}/../..)
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PATH_TO_CMAKE_MODULES})
 include(vedgTools/CMakeLicense)
 
 set(TCLAP_INCLUDE_PATH "" CACHE PATH
@@ -20,7 +21,7 @@ if(NOT (TCLAP_INCLUDE_PATH STREQUAL ""))
     include_directories(${TCLAP_INCLUDE_PATH})
 else()
     message("TCLAP_INCLUDE_PATH was not specified."
-            " Assume that tclap is in system include directory.")
+            " Assuming that tclap is in system include directory.")
 endif()
 
 if(DEBUG_INCLUDE_EXPANDER)
@@ -31,6 +32,9 @@ add_definitions(-DEXECUTABLE_NAME="${Executable_Name}")
 
 
 set(Sources_Path src)
+
+include_directories(${PATH_TO_CMAKE_MODULES}/include)
+
 set(Sources
     ${Sources_Path}/PatternUtilities.cpp ${Sources_Path}/IncludeExpander.cpp
     ${Sources_Path}/main.cpp

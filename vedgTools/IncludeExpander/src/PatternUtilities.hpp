@@ -19,6 +19,8 @@
 # ifndef PATTERN_UTILITIES_HPP
 # define PATTERN_UTILITIES_HPP
 
+# include <CommonUtilities/Miscellaneous.hpp>
+
 # include <cstddef>
 # include <cctype>
 # include <utility>
@@ -34,9 +36,7 @@
 
 namespace PatternUtilities
 {
-constexpr int safeCtypeCast(unsigned char c) noexcept { return c; }
-template<int (& F)(int)>
-constexpr int safeCtype(unsigned char c) { return F(c); }
+using CommonUtilities::safeCtype;
 
 template <typename UnaryCharPredicate>
 inline void skipIf(const std::string & str, std::size_t & index,
@@ -90,7 +90,7 @@ public:
 
     /// @brief First discarder_(source, index) is called - it can change index.
     /// Then, if X symbols of source starting from index match this pattern,
-    /// index becomes equal to index + X, otherwise, index is not changed on
+    /// index becomes equal to index + X. Otherwise, index is not changed at
     /// this stage.
     // bool match(...) override = 0;
 
@@ -103,7 +103,7 @@ class Whitespace : public Pattern
 {
 public:
     /// @brief Matches if source[index] is a whitespace.\n
-    /// If matched, index is incremented, otherwise, index is not changed.
+    /// If matched, index is incremented; otherwise index is not changed.
     bool match(const std::string & source, std::size_t & index) override;
 };
 
@@ -135,7 +135,8 @@ typedef GenericString<std::equal_to<char>> String;
 
 struct LowerMixedCaseCiCharComparator {
     constexpr bool operator()(char lower, char mixed) const {
-        return safeCtypeCast(lower) == safeCtype<std::tolower>(mixed);
+        return CommonUtilities::safeCtypeCast(lower) ==
+               safeCtype<std::tolower>(mixed);
     }
 };
 /// Case-insensitive String.
@@ -186,7 +187,7 @@ public:
 
     /// @brief Finds symbol_. Skips everything before symbol_.
     /// @param index If symbol_ was found, points to the position in source
-    /// right after the position of symbol_. Otherwise, index's resulting value
+    /// right after the position of symbol_; otherwise index's resulting value
     /// is std::string::npos.
     bool match(const std::string & source, std::size_t & index) override;
 
