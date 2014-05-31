@@ -157,7 +157,7 @@ public:
     /// @brief Matches any sequence of non-whitespace and not ')' characters.
     bool match(const std::string & source, std::size_t & index) override;
 
-    /// @return Last matched param. If match has never occured, empty string.
+    /// @return Last matched param. If match has never occurred, empty string.
     const std::string & getParam() const { return param_; }
 
 private:
@@ -192,7 +192,7 @@ public:
     bool match(const std::string & source, std::size_t & index) override;
 
     /// @return Position of the found symbol_ in source. Undefined
-    /// number if match has never occured.
+    /// number if match has never occurred.
     std::size_t getSymbolPosition() const { return symbolPosition_; }
 
 private:
@@ -214,11 +214,11 @@ public:
     bool match(const std::string & source, std::size_t & index) override;
 
     /// @return Position of the beginning of matched line in source. Undefined
-    /// number if match has never occured.
+    /// number if match has never occurred.
     std::size_t getLineBeginning() const { return lineBeginning_; }
 
     /// @return Position of the beginning of matched pattern in source.
-    /// Undefined number if match has never occured.
+    /// Undefined number if match has never occurred.
     std::size_t getPatternBeginning() const { return patternBeginning_; }
 
 private:
