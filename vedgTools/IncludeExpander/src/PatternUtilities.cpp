@@ -18,6 +18,8 @@
 
 # include "PatternUtilities.hpp"
 
+# include <CommonUtilities/String.hpp>
+
 # include <cctype>
 # include <stdexcept>
 
@@ -38,7 +40,7 @@ bool Param::match(const std::string & source, std::size_t & index)
 {
     discarder_(source, index);
     std::size_t end = index;
-    skipIf(source, end, [](char c) {
+    Str::skipIf(source, end, [](char c) {
         return !(c == ')' || safeCtype<std::isspace>(c));
     });
     if (end == index)
@@ -54,8 +56,7 @@ bool SearchSymbol::match(const std::string & source, std::size_t & index)
     index = source.find(symbol_, index);
     if (index == std::string::npos)
         return false;
-    symbolPosition_ = index;
-    ++index;
+    symbolPosition_ = index++;
     return true;
 }
 
@@ -63,28 +64,22 @@ bool SearchSymbol::match(const std::string & source, std::size_t & index)
 bool SearchLine::match(const std::string & source, std::size_t & index)
 {
     while (findStr(source, index), index != std::string::npos) {
-        lineBeginning_ = patternBeginning_ = index;
-        while (lineBeginning_ != 0) {
-            --lineBeginning_;
-            if (source[lineBeginning_] == '\n') {
-                ++lineBeginning_;
-                break;
-            }
-            if (! safeCtype<std::isspace>(source[lineBeginning_])) {
-                lineBeginning_ = std::string::npos;
-                break;
-            }
-        }
-        if (lineBeginning_ == std::string::npos) {
+        patternBeginning_ = index;
+        lineBeginning_ = Str::Backward::findEolOrNonWs(source, 0, index);
+        if (lineBeginning_ == Str::npos())
+            lineBeginning_ = 0;
+        else if (source[lineBeginning_] == '\n')
+            ++lineBeginning_;
+        else {
+            // Not at the beginning of the line -> continue search.
             index = source.find('\n', index);
             if (index == std::string::npos)
                 break;
             ++index;
+            continue;
         }
-        else {
-            index += size();
-            return true;
-        }
+        index += size();
+        return true;
     }
     return false;
 }
@@ -101,9 +96,9 @@ SearchCiStringLine::SearchCiStringLine(const std::string & lowerStr)
     const char lower = lowerStr.front();
     const char upper = safeCtype<std::toupper>(lower);
     if (lower == upper)
-        firstSymbol_.assign(1, lower);
+        firstSymbol_ = { lower };
     else
-        firstSymbol_.assign( { lower, upper });
+        firstSymbol_ = { lower, upper };
 }
 
 void SearchCiStringLine::findStr(const std::string & source,

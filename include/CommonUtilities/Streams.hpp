@@ -16,16 +16,38 @@
  vedgTools/CommonUtilities.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-# ifndef COMMON_UTILITIES_MISCELLANEOUS_HPP
-# define COMMON_UTILITIES_MISCELLANEOUS_HPP
+# ifndef COMMON_UTILITIES_STREAMS_HPP
+# define COMMON_UTILITIES_STREAMS_HPP
+
+# include <string>
+# include <sstream>
+# include <fstream>
 
 
 namespace CommonUtilities
 {
-constexpr int safeCtypeCast(unsigned char c) noexcept { return c; }
-
-template<int (& F)(int)>
-constexpr int safeCtype(unsigned char c) { return F(c); }
+inline std::string getFileContents(const std::istream & stream)
+{
+    std::ostringstream buffer;
+    buffer << stream.rdbuf();
+    return buffer.str();
 }
 
-# endif // COMMON_UTILITIES_MISCELLANEOUS_HPP
+inline std::string getFileContents(const std::string & filename)
+{
+    return getFileContents(std::ifstream(filename));
+}
+
+inline bool isStreamFine(const std::ifstream & ifs)
+{
+    return ifs.is_open() && ! ifs.bad();
+}
+
+inline bool isStreamFine(const std::ostream & os)
+{
+    return os;
+}
+
+}
+
+# endif // COMMON_UTILITIES_STREAMS_HPP

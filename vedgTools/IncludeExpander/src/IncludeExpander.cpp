@@ -20,12 +20,14 @@
 
 # include "PatternUtilities.hpp"
 
+# include <CommonUtilities/String.hpp>
+# include <CommonUtilities/Streams.hpp>
+
 # include <cstddef>
 # include <utility>
 # include <array>
 # include <map>
 # include <string>
-# include <sstream>
 # include <stdexcept>
 # include <iostream>
 # include <fstream>
@@ -33,13 +35,6 @@
 
 namespace
 {
-std::string readFile(const std::ifstream & fileStream)
-{
-    std::ostringstream buffer;
-    buffer << fileStream.rdbuf();
-    return buffer.str();
-}
-
 class Error : public std::runtime_error
 {
 public:
@@ -50,7 +45,7 @@ public:
 /// @throw Error In case of filesystem error.
 void checkError(const std::ifstream & ifs, const std::string & filename)
 {
-    if (! ifs.is_open() || ifs.bad()) {
+    if (! CommonUtilities::isStreamFine(ifs)) {
         std::cerr << "Reading file " << filename << " failed."
                   << std::endl;
         throw Error();
@@ -60,7 +55,7 @@ void checkError(const std::ifstream & ifs, const std::string & filename)
 /// @throw Error In case of filesystem error.
 void checkError(const std::ofstream & ofs, const std::string & filename)
 {
-    if (! ofs) {
+    if (! CommonUtilities::isStreamFine(ofs)) {
         std::cerr << "Writing to file " << filename << " failed."
                   << std::endl;
         throw Error();
@@ -78,7 +73,7 @@ std::string getText(const std::string & dir, const std::string & filename)
 # endif
 
     std::ifstream source(absoluteName);
-    const std::string result = readFile(source);
+    std::string result = CommonUtilities::getFileContents(source);
     checkError(source, absoluteName);
     return result;
 }
@@ -118,31 +113,33 @@ private:
     Whitespace whitespace_;
 
     SearchCiStringLine startInclude_ { startCommand() };
-    String startSeparator_ { startSeparator(), skipWs };
-    String libraryPrefix_ { libraryPrefix(), skipWs };
-    Param filename_ { noSkip };
-    String endSeparator_ { endSeparator(), skipWs };
+    String startSeparator_ { startSeparator(), Str::skipWs };
+    String libraryPrefix_ { libraryPrefix(), Str::skipWs };
+    Param filename_ { Str::noSkip };
+    String endSeparator_ { endSeparator(), Str::skipWs };
 
 
     SearchStringLine startBoilerplate_ { "##" };
     std::array<String, 3> directiveBoilerplate_ {{
-            String("vedgTools/CMakeModules", skipBlank),
-            String("path", skipBlank), String("boilerplate", skipBlank)
+            String("vedgTools/CMakeModules", Str::skipBlank),
+            String("path", Str::skipBlank),
+            String("boilerplate", Str::skipBlank)
         }
     };
     SearchSymbol searchEndOfLine_ { '\n' };
 
-    CiString includeCommand_ { startCommand(), skipWs };
+    CiString includeCommand_ { startCommand(), Str::skipWs };
     std::array<String, 2> includeBoilerplate_ {{
-            String("OPTIONAL", skipWs), String("RESULT_VARIABLE", skipWs)
+            String("OPTIONAL", Str::skipWs),
+            String("RESULT_VARIABLE", Str::skipWs)
         }
     };
-    Param wasIncluded_ { skipWs };
+    Param wasIncluded_ { Str::skipWs };
 
-    CiString if_ { "if", skipWs };
-    ParamCopy wasIncludedCopy_ { wasIncluded_, skipWs };
+    CiString if_ { "if", Str::skipWs };
+    ParamCopy wasIncludedCopy_ { wasIncluded_, Str::skipWs };
     std::array<String, 2> ifVars {{
-            String("STREQUAL", skipWs), String("NOTFOUND", skipWs)
+            String("STREQUAL", Str::skipWs), String("NOTFOUND", Str::skipWs)
         }
     };
 
@@ -236,11 +233,11 @@ std::string IncludeExpander::Impl::expand(
                 "## Boilerplate substitution was not executed.\n" +
                 source.substr(posAfterComment);
         }
-        const auto expanded = expandIncludes(result);
+        auto expanded = expandIncludes(result);
         return expanded.second ? expanded.first : result;
     }
     else {
-        const auto expanded = expandIncludes(source);
+        auto expanded = expandIncludes(source);
         return expanded.second ? expanded.first : source;
     }
 }
@@ -274,9 +271,9 @@ std::string IncludeExpander::Impl::getContents(const std::string & moduleName)
                   emplace_hint(p.first, moduleName, std::move(contents));
 # endif
         while (true) {
-            const auto expanded = expandIncludes(p.first->second);
+            auto expanded = expandIncludes(p.first->second);
             if (expanded.second)
-                p.first->second = expanded.first;
+                p.first->second = std::move(expanded.first);
             else
                 break;
         }
@@ -348,7 +345,7 @@ int IncludeExpander::operator()(const std::string & inputFile,
                                 const std::string & modulesDir)
 {
     std::ifstream input(inputFile);
-    const std::string source = readFile(input);
+    const std::string source = CommonUtilities::getFileContents(input);
     try {
         checkError(input, inputFile);
     }

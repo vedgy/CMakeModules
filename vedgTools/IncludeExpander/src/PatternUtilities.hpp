@@ -19,7 +19,7 @@
 # ifndef PATTERN_UTILITIES_HPP
 # define PATTERN_UTILITIES_HPP
 
-# include <CommonUtilities/Miscellaneous.hpp>
+# include <CommonUtilities/String.hpp>
 
 # include <cstddef>
 # include <cctype>
@@ -37,28 +37,7 @@
 namespace PatternUtilities
 {
 using CommonUtilities::safeCtype;
-
-template <typename UnaryCharPredicate>
-inline void skipIf(const std::string & str, std::size_t & index,
-                   UnaryCharPredicate f)
-{
-    index = std::find_if_not(str.begin() + index, str.end(), f) - str.begin();
-}
-
-inline void skipWs(const std::string & str, std::size_t & index)
-{
-    skipIf(str, index, safeCtype<std::isspace>);
-}
-
-inline void skipBlank(const std::string & str, std::size_t & index)
-{
-    skipIf(str, index, safeCtype<std::isblank>);
-}
-
-inline void noSkip(const std::string &, std::size_t &) noexcept
-{}
-
-
+namespace Str = CommonUtilities::String;
 
 class Pattern
 {
@@ -73,9 +52,9 @@ public:
     Pattern() = default;
     virtual ~Pattern() = default;
     Pattern(const Pattern &) = default;
-    Pattern & operator=(const Pattern &) = default;
+    Pattern & operator=(const Pattern &) & = default;
     Pattern(Pattern &&) = default;
-    Pattern & operator=(Pattern &&) = default;
+    Pattern & operator=(Pattern &&) & = default;
 };
 
 
@@ -85,7 +64,7 @@ public:
     typedef std::function<void(const std::string & str, std::size_t & index)>
     Discarder;
 
-    explicit SkippingPattern(Discarder discarder = noSkip)
+    explicit SkippingPattern(Discarder discarder = Str::noSkip)
         : discarder_(std::move(discarder)) {}
 
     /// @brief First discarder_(source, index) is called - it can change index.
@@ -112,7 +91,7 @@ template<class CharComparator>
 class GenericString : public SkippingPattern
 {
 public:
-    explicit GenericString(std::string str, Discarder discarder = noSkip)
+    explicit GenericString(std::string str, Discarder discarder = Str::noSkip)
         : SkippingPattern(std::move(discarder)), str_(std::move(str)) {}
 
     /// @brief Matches str_.
@@ -148,7 +127,7 @@ class Param : public SkippingPattern
 {
 public:
 # if NO_INHERITING_CONSTRUCTORS
-    explicit Param(Discarder discarder = noSkip)
+    explicit Param(Discarder discarder = Str::noSkip)
         : SkippingPattern(std::move(discarder)) {}
 # else
     using SkippingPattern::SkippingPattern;
@@ -168,7 +147,7 @@ private:
 class ParamCopy : public SkippingPattern
 {
 public:
-    explicit ParamCopy(const Param & param, Discarder discarder = noSkip)
+    explicit ParamCopy(const Param & param, Discarder discarder = Str::noSkip)
         : SkippingPattern(std::move(discarder)), param_(param) {}
 
     bool match(const std::string & source, std::size_t & index) override {
