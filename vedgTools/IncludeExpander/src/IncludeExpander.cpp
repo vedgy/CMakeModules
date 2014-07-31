@@ -234,11 +234,15 @@ std::string IncludeExpander::Impl::expand(
                 source.substr(posAfterComment);
         }
         auto expanded = expandIncludes(result);
-        return expanded.second ? expanded.first : result;
+        if (expanded.second)
+            return std::move(expanded.first);
+        return result;
     }
     else {
         auto expanded = expandIncludes(source);
-        return expanded.second ? expanded.first : source;
+        if (expanded.second)
+            return std::move(expanded.first);
+        return source;
     }
 }
 
