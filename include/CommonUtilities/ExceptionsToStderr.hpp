@@ -26,7 +26,7 @@
 namespace CommonUtilities
 {
 template <typename F>
-bool exceptionsToStderr(F f, const char * errorPrefix)
+bool exceptionsToStderr(F f, const char * errorPrefix) noexcept
 {
     try {
         f();

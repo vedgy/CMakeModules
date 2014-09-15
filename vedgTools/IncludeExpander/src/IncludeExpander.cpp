@@ -342,7 +342,7 @@ IncludeExpander::IncludeExpander() : impl_(new Impl)
 {
 }
 
-IncludeExpander::~IncludeExpander() = default;
+IncludeExpander::~IncludeExpander() noexcept = default;
 
 int IncludeExpander::operator()(const std::string & inputFile,
                                 const std::string & outputFile,

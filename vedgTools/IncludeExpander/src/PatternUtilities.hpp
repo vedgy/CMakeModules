@@ -50,7 +50,7 @@ public:
     virtual bool match(const std::string & source, std::size_t & index) = 0;
 
     Pattern() = default;
-    virtual ~Pattern() = default;
+    virtual ~Pattern() noexcept = default;
     Pattern(const Pattern &) = default;
     Pattern & operator=(const Pattern &) & = default;
     Pattern(Pattern &&) = default;

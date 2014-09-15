@@ -38,7 +38,7 @@ public:
 # undef INCLUDE_EXPANDER_STRING_CONSTANT
 
     explicit IncludeExpander();
-    ~IncludeExpander();
+    ~IncludeExpander() noexcept;
 
     /// @return Exit code suitable to return from main().
     int operator()(const std::string & inputFile,

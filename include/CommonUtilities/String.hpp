@@ -35,12 +35,12 @@ namespace CommonUtilities
 
 constexpr int safeCtypeCast(unsigned char c) noexcept { return c; }
 
-template<int (& F)(int)>
+template <int (& F)(int)>
 constexpr int safeCtype(unsigned char c) { return F(c); }
 
 /// @brief Equivalent to safeCtype function but may improve performance if
 /// passed to algorithm, because functor can be inlined more easily.
-template<int (& F)(int)>
+template <int (& F)(int)>
 struct SafeCtype {
     constexpr int operator()(unsigned char c) const { return F(c); }
 };
@@ -95,9 +95,9 @@ inline void trim(std::string & str)
 template <typename F>
 inline void skipIf(const std::string & str, std::size_t & index, F discarder)
 {
-    index =
-        std::find_if_not(str.begin() + index, str.end(), std::move(discarder)) -
-        str.begin();
+    index = std::size_t(
+                std::find_if_not(str.begin() + std::ptrdiff_t(index), str.end(),
+                                 std::move(discarder)) - str.begin());
 }
 
 inline void skipWs(const std::string & str, std::size_t & index)
@@ -108,7 +108,7 @@ inline void skipWs(const std::string & str, std::size_t & index)
 inline void skipWsExceptEol(const std::string & str, std::size_t & index)
 {
     skipIf(str, index, [](char c) {
-        return safeCtype<std::isspace>(c) && c != '\n';
+        return safeCtype<std::isspace>((unsigned char)c) && c != '\n';
     });
 }
 
@@ -130,10 +130,10 @@ inline std::size_t find(const std::string & str, std::size_t start,
                         std::size_t end, const std::string & pattern)
 {
     assert(start <= end);
-    const auto endIt = str.begin() + end;
-    const auto it = std::search(str.begin() + start, endIt,
+    const auto endIt = str.begin() + std::ptrdiff_t(end);
+    const auto it = std::search(str.begin() + std::ptrdiff_t(start), endIt,
                                 pattern.begin(), pattern.end());
-    return it == endIt ? npos() : it - str.begin();
+    return it == endIt ? npos() : std::size_t(it - str.begin());
 }
 
 
@@ -162,7 +162,9 @@ std::size_t locate(const std::string & str, std::size_t start, std::size_t end,
 {
     assert(start <= end);
     const RevIt rEnd = str.rend();
-    const std::size_t result = rEnd - locator(rEnd - end, rEnd - start);
+    const std::size_t result =
+        std::size_t(rEnd - locator(rEnd - std::ptrdiff_t(end),
+                                   rEnd - std::ptrdiff_t(start)));
     return result == start ? npos() : result - 1;
 }
 
@@ -213,7 +215,7 @@ inline std::size_t findEolOrNonWs(const std::string & str, std::size_t start,
                                   std::size_t end)
 {
     return findIf(str, start, end, [](char c) {
-        return c == '\n' || ! safeCtype<std::isspace>(c);
+        return c == '\n' || ! safeCtype<std::isspace>((unsigned char)c);
     });
 }
 
