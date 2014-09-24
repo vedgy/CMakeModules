@@ -20,37 +20,37 @@
 # define COMMON_UTILITIES_COPY_AND_MOVE_SEMANTICS_HPP
 
 
-# define PRIVATE_CAMSM_COPYABLE(Class) \
-    Class(const Class &) = default;    \
+# define PRIVATE_CUCAMS_COPYABLE(Class) \
+    Class(const Class &) = default;     \
     Class & operator=(const Class &) = default;
 
-# define PRIVATE_CAMSM_NON_COPYABLE(Class) \
-    Class(const Class &) = delete;         \
+# define PRIVATE_CUCAMS_NON_COPYABLE(Class) \
+    Class(const Class &) = delete;          \
     Class & operator=(const Class &) = delete;
 
-# define PRIVATE_CAMSM_MOVABLE(Class) \
-    Class(Class &&) = default;        \
+# define PRIVATE_CUCAMS_MOVABLE(Class)  \
+    Class(Class &&) = default;          \
     Class & operator=(Class &&) = default;
 
-# define PRIVATE_CAMSM_NON_MOVABLE(Class) \
-    Class(Class &&) = delete;             \
+# define PRIVATE_CUCAMS_NON_MOVABLE(Class)  \
+    Class(Class &&) = delete;               \
     Class & operator=(Class &&) = delete;
 
 
 /// Defaults copy/move constructors/assignment operators in Class.
-# define COPYABLE_AND_MOVABLE(Class) \
-    PRIVATE_CAMSM_COPYABLE(Class)    \
-    PRIVATE_CAMSM_MOVABLE(Class)
+# define COPYABLE_AND_MOVABLE(Class)    \
+    PRIVATE_CUCAMS_COPYABLE(Class)      \
+    PRIVATE_CUCAMS_MOVABLE(Class)
 
 /// Deletes copy constructor/assignment operator in Class;
 /// defaults move constructor/assignment operator in Class.
-# define NON_COPYABLE_BUT_MOVABLE(Class) \
-    PRIVATE_CAMSM_NON_COPYABLE(Class)    \
-    PRIVATE_CAMSM_MOVABLE(Class)
+# define NON_COPYABLE_BUT_MOVABLE(Class)    \
+    PRIVATE_CUCAMS_NON_COPYABLE(Class)      \
+    PRIVATE_CUCAMS_MOVABLE(Class)
 
 /// Deletes copy/move constructors/assignment operators in Class.
-# define NEITHER_COPYABLE_NOR_MOVABLE(Class) \
-    PRIVATE_CAMSM_NON_COPYABLE(Class)        \
-    PRIVATE_CAMSM_NON_MOVABLE(Class)
+# define NEITHER_COPYABLE_NOR_MOVABLE(Class)    \
+    PRIVATE_CUCAMS_NON_COPYABLE(Class)          \
+    PRIVATE_CUCAMS_NON_MOVABLE(Class)
 
 # endif // COMMON_UTILITIES_COPY_AND_MOVE_SEMANTICS_HPP
