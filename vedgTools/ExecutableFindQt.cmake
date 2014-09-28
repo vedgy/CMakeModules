@@ -2,6 +2,14 @@
 # Arguments: required Qt5 modules, then period, then required Qt4 components.
 # For example: executableFindQt(Qt5Core Qt5Widgets . QTCORE QTGUI)
 macro(executableFindQt)
+    add_definitions(-DQT_USE_QSTRINGBUILDER)
+    if(CMAKE_BUILD_TYPE)
+        if((${CMAKE_BUILD_TYPE} STREQUAL "Release") OR
+           (${CMAKE_BUILD_TYPE} STREQUAL "MinSizeRel"))
+            add_definitions(-DQT_NO_DEBUG -DQT_NO_DEBUG_OUTPUT)
+        endif()
+    endif()
+
     include(vedgTools/ParseQtModules)
     parseQtModules(${ARGN})
 
@@ -31,6 +39,4 @@ macro(executableFindQt)
         include_directories(${QT_INCLUDES})
         message("Using Qt4.")
     endif()
-
-    add_definitions(-DQT_USE_QSTRINGBUILDER)
 endmacro()
