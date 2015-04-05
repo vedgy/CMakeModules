@@ -1,6 +1,6 @@
 /*
  This file is part of vedgTools/IncludeExpander.
- Copyright (C) 2014 Igor Kushnir <igorkuo AT Google mail>
+ Copyright (C) 2014, 2015 Igor Kushnir <igorkuo AT Google mail>
 
  vedgTools/IncludeExpander is free software: you can redistribute it and/or
  modify it under the terms of the GNU General Public License as published by
@@ -149,7 +149,7 @@ private:
 
     const PatternMatcher::PatternSequence includeSequence_;
     /// NOTE: non-const only because of verbose initialization in constructor.
-    /// Must not be changed after constructor.
+    /// May not be changed after constructor.
     PatternMatcher::PatternSequence boilerplateSequence_;
 
     /// Holds current modulesDir.

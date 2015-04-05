@@ -1,6 +1,6 @@
 /*
  This file is part of vedgTools/CommonUtilities.
- Copyright (C) 2014 Igor Kushnir <igorkuo AT Google mail>
+ Copyright (C) 2014, 2015 Igor Kushnir <igorkuo AT Google mail>
 
  vedgTools/CommonUtilities is free software: you can redistribute it and/or
  modify it under the terms of the GNU General Public License as published by
@@ -19,10 +19,17 @@
 # ifndef COMMON_UTILITIES_COPY_AND_MOVE_SEMANTICS_HPP
 # define COMMON_UTILITIES_COPY_AND_MOVE_SEMANTICS_HPP
 
+# if __GNUC__ == 4 && __GNUC_MINOR__ < 8
+// Ref-qualified member functions are not supported by GCC 4.7.
+#   define ASSIGNMENT_OPERATOR_REF_QUALIFICATION
+# else
+#   define ASSIGNMENT_OPERATOR_REF_QUALIFICATION &
+# endif
 
 # define PRIVATE_CUCAMS_COPYABLE(Class) \
     Class(const Class &) = default;     \
-    Class & operator=(const Class &) = default;
+    Class & operator=(const Class &)    \
+        ASSIGNMENT_OPERATOR_REF_QUALIFICATION = default;
 
 # define PRIVATE_CUCAMS_NON_COPYABLE(Class) \
     Class(const Class &) = delete;          \
@@ -30,7 +37,8 @@
 
 # define PRIVATE_CUCAMS_MOVABLE(Class)  \
     Class(Class &&) = default;          \
-    Class & operator=(Class &&) = default;
+    Class & operator=(Class &&)         \
+        ASSIGNMENT_OPERATOR_REF_QUALIFICATION = default;
 
 # define PRIVATE_CUCAMS_NON_MOVABLE(Class)  \
     Class(Class &&) = delete;               \
