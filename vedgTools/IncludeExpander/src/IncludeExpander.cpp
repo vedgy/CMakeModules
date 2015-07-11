@@ -81,7 +81,7 @@ std::string getText(const std::string & dir, const std::string & filename)
 
 using namespace PatternUtilities;
 
-}
+} // END unnamed namespace
 
 
 class IncludeExpander::Impl
@@ -339,8 +339,7 @@ std::pair<std::string, bool> IncludeExpander::Impl::expandIncludes(
 
 
 IncludeExpander::IncludeExpander() : impl_(new Impl)
-{
-}
+{}
 
 IncludeExpander::~IncludeExpander() noexcept = default;
 

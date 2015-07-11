@@ -1,6 +1,6 @@
 /*
  This file is part of vedgTools/CommonUtilities.
- Copyright (C) 2014 Igor Kushnir <igorkuo AT Google mail>
+ Copyright (C) 2014, 2015 Igor Kushnir <igorkuo AT Google mail>
 
  vedgTools/CommonUtilities is free software: you can redistribute it and/or
  modify it under the terms of the GNU General Public License as published by
@@ -66,11 +66,11 @@ void print(
     const std::array<std::string, 0> &, const std::array<T, 0> &) noexcept
 {}
 
-template <typename T, std::size_t N>
-void print(const std::array<std::string, N> & names,
-           const std::array<T, N> & values)
+template <typename T, std::size_t size>
+void print(const std::array<std::string, size> & names,
+           const std::array<T, size> & values)
 {
-    for (std::size_t i = 0; i < N - 1; ++i)
+    for (std::size_t i = 0; i < size - 1; ++i)
         printNotLast(names[i], values[i]);
     print(names.back(), values.back());
 }
@@ -92,8 +92,7 @@ void print(const std::string & name1, const T & value1,
     print(name2, value2, name3, value3);
 }
 
-}
-
-}
+} // END namespace Testing
+} // END namespace CommonUtilities
 
 # endif // COMMON_UTILITIES_TESTING_HPP

@@ -1,6 +1,6 @@
 /*
  This file is part of vedgTools/IncludeExpander.
- Copyright (C) 2014 Igor Kushnir <igorkuo AT Google mail>
+ Copyright (C) 2014, 2015 Igor Kushnir <igorkuo AT Google mail>
 
  vedgTools/IncludeExpander is free software: you can redistribute it and/or
  modify it under the terms of the GNU General Public License as published by
@@ -26,6 +26,12 @@
 
 namespace PatternUtilities
 {
+Pattern::~Pattern() noexcept = default;
+
+
+SkippingPattern::~SkippingPattern() noexcept = default;
+
+
 bool Whitespace::match(const std::string & source, std::size_t & index)
 {
     if (index < source.size() && safeCtype<std::isspace>(source[index])) {
@@ -48,6 +54,12 @@ bool Param::match(const std::string & source, std::size_t & index)
     param_ = source.substr(index, end - index);
     index = end;
     return true;
+}
+
+
+bool ParamCopy::match(const std::string & source, std::size_t & index)
+{
+    return String(param_.getParam(), discarder_).match(source, index);
 }
 
 
@@ -85,6 +97,12 @@ bool SearchLine::match(const std::string & source, std::size_t & index)
 }
 
 
+void SearchStringLine::findStr(const std::string & source, std::size_t & index)
+{
+    index = source.find(str_, index);
+}
+
+
 SearchCiStringLine::SearchCiStringLine(const std::string & lowerStr)
     : lowerStrWithoutFirstSymbol_(
         lowerStr.empty() ? std::string() : lowerStr.substr(1))
@@ -94,7 +112,7 @@ SearchCiStringLine::SearchCiStringLine(const std::string & lowerStr)
             "Don't pass empty string to SearchCiStringLine constructor.");
     }
     const char lower = lowerStr.front();
-    const char upper = safeCtype<std::toupper>(lower);
+    const char upper = static_cast<char>(safeCtype<std::toupper>(lower));
     if (lower == upper)
         firstSymbol_ = { lower };
     else
@@ -131,4 +149,4 @@ bool PatternMatcher::match(const std::string & source, std::size_t & index)
     return true;
 }
 
-}
+} // END namespace PatternUtilities

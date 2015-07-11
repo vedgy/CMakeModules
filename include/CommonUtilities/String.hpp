@@ -1,6 +1,6 @@
 /*
  This file is part of vedgTools/CommonUtilities.
- Copyright (C) 2014 Igor Kushnir <igorkuo AT Google mail>
+ Copyright (C) 2014, 2015 Igor Kushnir <igorkuo AT Google mail>
 
  vedgTools/CommonUtilities is free software: you can redistribute it and/or
  modify it under the terms of the GNU General Public License as published by
@@ -33,16 +33,23 @@ namespace CommonUtilities
 /// header (the behavior of those functions is undefined if the value of
 /// argument is not representable as unsigned char and is not equal to EOF).
 
-constexpr int safeCtypeCast(unsigned char c) noexcept { return c; }
+constexpr int safeCtypeCast(char c) noexcept {
+    return static_cast<unsigned char>(c);
+}
 
-template <int (& F)(int)>
-constexpr int safeCtype(unsigned char c) { return F(c); }
+template <int (& function)(int)>
+constexpr int safeCtype(char c)
+{
+    return function(safeCtypeCast(c));
+}
 
 /// @brief Equivalent to safeCtype function but may improve performance if
 /// passed to algorithm, because functor can be inlined more easily.
-template <int (& F)(int)>
+template <int (& function)(int)>
 struct SafeCtype {
-    constexpr int operator()(unsigned char c) const { return F(c); }
+    constexpr int operator()(char c) const {
+        return safeCtype<function>(c);
+    }
 };
 
 
@@ -50,8 +57,8 @@ namespace String
 {
 /// @brief Removes characters for which discarder returns true
 /// from the end of str.
-template <typename F>
-inline void trimRight(std::string & str, F discarder)
+template <typename Predicate>
+inline void trimRight(std::string & str, Predicate discarder)
 {
     str.erase(
         std::find_if_not(str.rbegin(), str.rend(), std::move(discarder)).base(),
@@ -65,8 +72,8 @@ inline void trimRight(std::string & str)
 
 /// @brief Removes characters for which discarder returns true
 /// from the beginning of str.
-template <typename F>
-inline void trimLeft(std::string & str, F discarder)
+template <typename Predicate>
+inline void trimLeft(std::string & str, Predicate discarder)
 {
     str.erase(str.begin(),
               std::find_if_not(str.begin(), str.end(), std::move(discarder)));
@@ -79,8 +86,8 @@ inline void trimLeft(std::string & str)
 
 /// @brief Removes characters for which discarder returns true
 /// from the beginning and the end of str.
-template <typename F>
-inline void trim(std::string & str, F discarder)
+template <typename Predicate>
+inline void trim(std::string & str, Predicate discarder)
 {
     trimRight(str, discarder);
     trimLeft(str, std::move(discarder));
@@ -92,12 +99,15 @@ inline void trim(std::string & str)
 }
 
 
-template <typename F>
-inline void skipIf(const std::string & str, std::size_t & index, F discarder)
+template <typename Predicate>
+inline void skipIf(const std::string & str, std::size_t & index,
+                   Predicate discarder)
 {
-    index = std::size_t(
-                std::find_if_not(str.begin() + std::ptrdiff_t(index), str.end(),
-                                 std::move(discarder)) - str.begin());
+    index = static_cast<std::size_t>(
+                std::find_if_not(
+                    str.begin() + static_cast<std::ptrdiff_t>(index), str.end(),
+                    std::move(discarder))
+                - str.begin());
 }
 
 inline void skipWs(const std::string & str, std::size_t & index)
@@ -108,7 +118,7 @@ inline void skipWs(const std::string & str, std::size_t & index)
 inline void skipWsExceptEol(const std::string & str, std::size_t & index)
 {
     skipIf(str, index, [](char c) {
-        return safeCtype<std::isspace>((unsigned char)c) && c != '\n';
+        return safeCtype<std::isspace>(c) && c != '\n';
     });
 }
 
@@ -130,10 +140,11 @@ inline std::size_t find(const std::string & str, std::size_t start,
                         std::size_t end, const std::string & pattern)
 {
     assert(start <= end);
-    const auto endIt = str.begin() + std::ptrdiff_t(end);
-    const auto it = std::search(str.begin() + std::ptrdiff_t(start), endIt,
-                                pattern.begin(), pattern.end());
-    return it == endIt ? npos() : std::size_t(it - str.begin());
+    const auto endIt = str.begin() + static_cast<std::ptrdiff_t>(end);
+    const auto it = std::search(
+                        str.begin() + static_cast<std::ptrdiff_t>(start), endIt,
+                        pattern.begin(), pattern.end());
+    return it == endIt ? npos() : static_cast<std::size_t>(it - str.begin());
 }
 
 
@@ -163,8 +174,9 @@ std::size_t locate(const std::string & str, std::size_t start, std::size_t end,
     assert(start <= end);
     const RevIt rEnd = str.rend();
     const std::size_t result =
-        std::size_t(rEnd - locator(rEnd - std::ptrdiff_t(end),
-                                   rEnd - std::ptrdiff_t(start)));
+        static_cast<std::size_t>(
+            rEnd - locator(rEnd - static_cast<std::ptrdiff_t>(end),
+                           rEnd - static_cast<std::ptrdiff_t>(start)));
     return result == start ? npos() : result - 1;
 }
 
@@ -179,29 +191,29 @@ inline std::size_t find(const std::string & str, std::size_t start,
     });
 }
 
-/// @brief Searches character for which p returns true in
+/// @brief Searches character for which predicate returns true in
 /// str.substr(start, end - start) backwards.
 /// @return Index of the last matching character in str (within range); npos()
 /// if matching character was not found in the range.
 template <typename Predicate>
 std::size_t findIf(const std::string & str, std::size_t start, std::size_t end,
-                   Predicate p)
+                   Predicate predicate)
 {
     return locate(str, start, end, [&](RevIt b, RevIt e) {
-        return std::find_if(b, e, std::move(p));
+        return std::find_if(b, e, std::move(predicate));
     });
 }
 
-/// @brief Searches character for which p returns false in
+/// @brief Searches character for which predicate returns false in
 /// str.substr(start, end - start) backwards.
 /// @return Index of the last matching character in str (within range); npos()
 /// if matching character was not found in the range.
 template <typename Predicate>
 std::size_t findIfNot(const std::string & str, std::size_t start,
-                      std::size_t end, Predicate p)
+                      std::size_t end, Predicate predicate)
 {
     return locate(str, start, end, [&](RevIt b, RevIt e) {
-        return std::find_if_not(b, e, std::move(p));
+        return std::find_if_not(b, e, std::move(predicate));
     });
 }
 
@@ -215,14 +227,14 @@ inline std::size_t findEolOrNonWs(const std::string & str, std::size_t start,
                                   std::size_t end)
 {
     return findIf(str, start, end, [](char c) {
-        return c == '\n' || ! safeCtype<std::isspace>((unsigned char)c);
+        return c == '\n' || ! safeCtype<std::isspace>(c);
     });
 }
 
-}
+} // END namespace Backward
 
-}
+} // END namespace String
 
-}
+} // END namespace CommonUtilities
 
 # endif // COMMON_UTILITIES_STRING_HPP

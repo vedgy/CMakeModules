@@ -1,6 +1,6 @@
 /*
  This file is part of vedgTools/CommonUtilities.
- Copyright (C) 2014 Igor Kushnir <igorkuo AT Google mail>
+ Copyright (C) 2014, 2015 Igor Kushnir <igorkuo AT Google mail>
 
  vedgTools/CommonUtilities is free software: you can redistribute it and/or
  modify it under the terms of the GNU General Public License as published by
@@ -25,11 +25,11 @@
 
 namespace CommonUtilities
 {
-template <typename F>
-bool exceptionsToStderr(F f, const char * errorPrefix) noexcept
+template <typename Function>
+bool exceptionsToStderr(Function function, const char * errorPrefix) noexcept
 {
     try {
-        f();
+        function();
         return true;
     }
     catch (const std::exception & e) {
@@ -45,6 +45,6 @@ bool exceptionsToStderr(F f, const char * errorPrefix) noexcept
     return false;
 }
 
-}
+} // END namespace CommonUtilities
 
 # endif // COMMON_UTILITIES_EXCEPTIONS_TO_STDERR_HPP

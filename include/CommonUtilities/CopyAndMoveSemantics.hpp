@@ -19,6 +19,7 @@
 # ifndef COMMON_UTILITIES_COPY_AND_MOVE_SEMANTICS_HPP
 # define COMMON_UTILITIES_COPY_AND_MOVE_SEMANTICS_HPP
 
+
 # if __GNUC__ == 4 && __GNUC_MINOR__ < 8
 // Ref-qualified member functions are not supported by GCC 4.7.
 #   define ASSIGNMENT_OPERATOR_REF_QUALIFICATION
@@ -45,7 +46,7 @@
     Class & operator=(Class &&) = delete;
 
 
-/// Defaults copy/move constructors/assignment operators in Class.
+/// Defaults copy and move constructors/assignment operators in Class.
 # define COPYABLE_AND_MOVABLE(Class)    \
     PRIVATE_CUCAMS_COPYABLE(Class)      \
     PRIVATE_CUCAMS_MOVABLE(Class)
@@ -56,7 +57,7 @@
     PRIVATE_CUCAMS_NON_COPYABLE(Class)      \
     PRIVATE_CUCAMS_MOVABLE(Class)
 
-/// Deletes copy/move constructors/assignment operators in Class.
+/// Deletes copy and move constructors/assignment operators in Class.
 # define NEITHER_COPYABLE_NOR_MOVABLE(Class)    \
     PRIVATE_CUCAMS_NON_COPYABLE(Class)          \
     PRIVATE_CUCAMS_NON_MOVABLE(Class)

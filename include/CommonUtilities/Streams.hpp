@@ -1,6 +1,6 @@
 /*
  This file is part of vedgTools/CommonUtilities.
- Copyright (C) 2014 Igor Kushnir <igorkuo AT Google mail>
+ Copyright (C) 2014, 2015 Igor Kushnir <igorkuo AT Google mail>
 
  vedgTools/CommonUtilities is free software: you can redistribute it and/or
  modify it under the terms of the GNU General Public License as published by
@@ -45,9 +45,9 @@ inline bool isStreamFine(const std::ifstream & ifs)
 
 inline bool isStreamFine(const std::ostream & os)
 {
-    return os;
+    return static_cast<bool>(os);
 }
 
-}
+} // END namespace CommonUtilities
 
 # endif // COMMON_UTILITIES_STREAMS_HPP

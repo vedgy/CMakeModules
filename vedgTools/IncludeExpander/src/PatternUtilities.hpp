@@ -19,6 +19,7 @@
 # ifndef PATTERN_UTILITIES_HPP
 # define PATTERN_UTILITIES_HPP
 
+# include <CommonUtilities/CopyAndMoveSemantics.hpp>
 # include <CommonUtilities/String.hpp>
 
 # include <cstddef>
@@ -31,7 +32,6 @@
 
 
 # define GCC_EARLIER_THAN_4_8 (__GNUC__ == 4 && __GNUC_MINOR__ < 8)
-# define NO_INHERITING_CONSTRUCTORS GCC_EARLIER_THAN_4_8
 
 
 namespace PatternUtilities
@@ -43,18 +43,15 @@ class Pattern
 {
 public:
     /// @brief Searches this pattern in the source string.
-    /// @param index Specifies starting search position in source.\n In case of
+    /// @param index Specifies starting search position in source. In case of
     /// match index will point to the position in source after last matched
     /// symbol. Otherwise, index's final value is defined by derived classes.
     /// @return true in case of match, false otherwise.
     virtual bool match(const std::string & source, std::size_t & index) = 0;
 
     Pattern() = default;
-    virtual ~Pattern() noexcept = default;
-    Pattern(const Pattern &) = default;
-    Pattern & operator=(const Pattern &) & = default;
-    Pattern(Pattern &&) = default;
-    Pattern & operator=(Pattern &&) & = default;
+    COPYABLE_AND_MOVABLE(Pattern)
+    virtual ~Pattern() noexcept;
 };
 
 
@@ -66,6 +63,9 @@ public:
 
     explicit SkippingPattern(Discarder discarder = Str::noSkip)
         : discarder_(std::move(discarder)) {}
+
+    COPYABLE_AND_MOVABLE(SkippingPattern)
+    ~SkippingPattern() noexcept override;
 
     /// @brief First discarder_(source, index) is called - it can change index.
     /// Then, if X symbols of source starting from index match this pattern,
@@ -81,7 +81,7 @@ protected:
 class Whitespace : public Pattern
 {
 public:
-    /// @brief Matches if source[index] is a whitespace.\n
+    /// @brief Matches if source[index] is a whitespace.
     /// If matched, index is incremented; otherwise index is not changed.
     bool match(const std::string & source, std::size_t & index) override;
 };
@@ -98,7 +98,8 @@ public:
     bool match(const std::string & source, std::size_t & index) override {
         discarder_(source, index);
         if (index + str_.size() <= source.size() &&
-                std::equal(str_.begin(), str_.end(), source.begin() + index,
+                std::equal(str_.begin(), str_.end(),
+                           source.begin() + static_cast<std::ptrdiff_t>(index),
                            CharComparator())) {
             index += str_.size();
             return true;
@@ -126,12 +127,14 @@ typedef GenericString<LowerMixedCaseCiCharComparator> CiString;
 class Param : public SkippingPattern
 {
 public:
-# if NO_INHERITING_CONSTRUCTORS
+# define NO_inheriting_constructors GCC_EARLIER_THAN_4_8
+# if NO_inheriting_constructors
     explicit Param(Discarder discarder = Str::noSkip)
         : SkippingPattern(std::move(discarder)) {}
 # else
     using SkippingPattern::SkippingPattern;
 # endif
+# undef NO_inheriting_constructors
 
     /// @brief Matches any sequence of non-whitespace and not ')' characters.
     bool match(const std::string & source, std::size_t & index) override;
@@ -150,9 +153,8 @@ public:
     explicit ParamCopy(const Param & param, Discarder discarder = Str::noSkip)
         : SkippingPattern(std::move(discarder)), param_(param) {}
 
-    bool match(const std::string & source, std::size_t & index) override {
-        return String(param_.getParam(), discarder_).match(source, index);
-    }
+    /// @brief Matches param_.getParam().
+    bool match(const std::string & source, std::size_t & index) override;
 
 private:
     const Param & param_;
@@ -220,9 +222,8 @@ public:
     explicit SearchStringLine(std::string str) : str_(std::move(str)) {}
 
 private:
-    void findStr(const std::string & source, std::size_t & index) override {
-        index = source.find(str_, index);
-    }
+    /// @brief Searches for str_ in source.
+    void findStr(const std::string & source, std::size_t & index) override;
 
     std::size_t size() const override { return str_.size(); }
 
@@ -237,6 +238,7 @@ public:
     explicit SearchCiStringLine(const std::string & lowerStr);
 
 private:
+    /// @brief Performs case-insensitive search of lowerStr in source.
     void findStr(const std::string & source, std::size_t & index) override;
 
     std::size_t size() const override {
@@ -268,9 +270,9 @@ public:
     /// @brief Resets current pattern id to initial state. Thus, enables reuse.
     void reset() { patternId_ = 0; }
 
-    /// @param index Specifies starting search position in source.\n
+    /// @param index Specifies starting search position in source.
     /// In case of false return value, index is set to the position
-    /// in source of the first mismatched symbol.\n
+    /// in source of the first mismatched symbol.
     /// In case of true return value, index's value is determined by first
     /// mismatched pattern (i.e. position in source right after the last matched
     /// symbol for most patterns; and std::string::npos in case of
@@ -283,6 +285,6 @@ private:
     std::size_t patternId_ = 0;
 };
 
-}
+} // END namespace PatternUtilities
 
 # endif // PATTERN_UTILITIES_HPP
